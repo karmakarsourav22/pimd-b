@@ -18,7 +18,7 @@ public:
     ClassicalKineticEnergyObservable(
         const VelocityContext& vel_ctx,
         const BeadContext& bead_ctx,
-        int   out_freq,
+        int64_t   out_freq,
         const std::string& out_unit
     );
 

@@ -4,7 +4,7 @@
 ClassicalKineticEnergyObservable::ClassicalKineticEnergyObservable(
     const VelocityContext& vel_ctx,
     const BeadContext& bead_ctx,
-    int   out_freq,
+    int64_t   out_freq,
     const std::string& out_unit
 ) : Observable("cl_kinetic", out_freq, out_unit),
     m_vel_ctx(vel_ctx),

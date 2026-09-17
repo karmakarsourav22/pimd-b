@@ -21,7 +21,7 @@ public:
         const std::string& filename,
         int first_idx,
         const std::string& init_vel_unit,
-        long init_vel_frame,
+        int64_t init_vel_frame,
         FrameSelectionMode init_vel_frame_mode,
         const std::shared_ptr<SystemState>& state,
         double mass
@@ -33,7 +33,7 @@ private:
     std::string m_filename;
     int m_first_idx;
     std::string m_init_vel_unit;
-    long m_init_vel_frame;
+    int64_t m_init_vel_frame;
     FrameSelectionMode m_init_vel_frame_mode;
 };
 

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "common.h"
+#include "core/potential_config.h"
 
 #include <string>
-#include "core/potential_config.h"
+#include <cstdint>
 
 struct ThermostatConfig {
     std::string type;
@@ -32,7 +33,7 @@ struct SimulationConfig {
     double thermo_beta; // Inverse temperature at which the simulation is actually performed ("thermostat beta")
     double dt;          // Timestep
     double box_size;    // Linear system size (TODO: Add support for Ly, Lz,...)
-    long threshold;     // Thermalization up to this many steps
+    int64_t threshold;     // Thermalization up to this many steps
 
     double mass;
     double spring_constant;  // k=m*omega_p^2 (where omega_p depends on the convention)
@@ -42,8 +43,8 @@ struct SimulationConfig {
     int natoms;         // Number of atoms in the system
     int nbeads;         // Number of beads
 
-    long sfreq;         // Save frequency (how often the observables are recorded)
-    long steps;         // Total number of MD steps
+    int64_t sfreq;         // Save frequency (how often the observables are recorded)
+    int64_t steps;         // Total number of MD steps
 
     bool bosonic;        // Is the simulation bosonic?
     double exchange_xi;  // Exchange parameter (only relevant when bosonic=true)
@@ -61,7 +62,7 @@ struct SimulationConfig {
     // Initialization method name for positions and velocities
     std::string init_pos_type, init_vel_type;
     std::string init_pos_unit, init_vel_unit;
-    long init_pos_frame, init_vel_frame;
+    int64_t init_pos_frame, init_vel_frame;
     FrameSelectionMode init_pos_frame_mode = FrameSelectionMode::Index;
     FrameSelectionMode init_vel_frame_mode = FrameSelectionMode::Index;
     std::string init_pos_filename, init_vel_filename;

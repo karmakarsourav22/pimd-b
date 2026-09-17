@@ -10,8 +10,8 @@
 
 // Constructor opens the file and writes the header
 ObservablesLogger::ObservablesLogger(
-    int this_bead,
-    long frequency,
+    const int this_bead,
+    const int64_t frequency,
     const std::vector<std::shared_ptr<Observable>>& observables
 ) :
     m_this_bead(this_bead),
@@ -122,7 +122,7 @@ void ObservablesLogger::openFile(const std::filesystem::path& filename) {
 }
 
 // Calculate and log observables data to the file
-void ObservablesLogger::log(const long step)
+void ObservablesLogger::log(const int64_t step)
 {
     // Wipe the cache at the beginning of each logging step to ensure that observables recalculate their values
     m_cache.invalidate();
@@ -151,7 +151,7 @@ void ObservablesLogger::log(const long step)
     }
 }
 
-void ObservablesLogger::writeTimeStep(long step)
+void ObservablesLogger::writeTimeStep(int64_t step)
 {
     if (m_this_bead != 0) return;
 

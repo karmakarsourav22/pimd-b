@@ -8,7 +8,7 @@ public:
     /**
      * @brief Velocity dump class constructor.
      */
-    VelocityDump(const VelocityContext& dump_context, int this_bead, int out_freq, const std::string& out_unit);
+    VelocityDump(const VelocityContext& dump_context, int this_bead, int64_t out_freq, const std::string& out_unit);
 
     /**
      * @brief Initializes the velocities dat file.
@@ -20,7 +20,7 @@ public:
      *
      * @param step Current step of the simulation.
      */
-    void output(int step) override;
+    void output(int64_t step) override;
 
 protected:
     [[nodiscard]] std::string fileName() const override { return std::format("velocity_{}.xyz", m_this_bead); }

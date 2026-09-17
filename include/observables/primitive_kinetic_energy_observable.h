@@ -17,7 +17,7 @@ public:
         const ThermalContext& thermal_ctx,
         const SpringContext& spring_ctx,
         const BoxContext& box_ctx,
-        int out_freq,
+        int64_t out_freq,
         const std::string& out_unit
     );
     ~PrimitiveKineticEnergyObservable() override;

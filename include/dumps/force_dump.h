@@ -12,7 +12,7 @@ public:
     /**
      * @brief Force dump class constructor.
      */
-    ForceDump(const std::shared_ptr<SystemState>& state, int this_bead, int out_freq, const std::string& out_unit);
+    ForceDump(const std::shared_ptr<SystemState>& state, int this_bead, int64_t out_freq, const std::string& out_unit);
 
     /**
      * @brief Initializes the forces dat file.
@@ -24,7 +24,7 @@ public:
      *
      * @param step Current step of the simulation.
      */
-    void output(int step) override;
+    void output(int64_t step) override;
 
 protected:
     [[nodiscard]] std::string fileName() const override { return std::format("force_{}.dat", m_this_bead); }

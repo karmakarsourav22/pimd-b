@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <cstdint>
 
 #ifdef USE_HDF5
 #include "hdf5_utils.h"
@@ -13,7 +14,7 @@ public:
     /**
      * @brief Generic state class constructor
      */
-    explicit Dump(int this_bead, int out_freq, const std::string& out_unit);
+    explicit Dump(int this_bead, int64_t out_freq, const std::string& out_unit);
 
     /**
      * @brief Closes the file upon destruction.
@@ -21,7 +22,7 @@ public:
     virtual ~Dump();
 
     //virtual void initialize() = 0;
-    virtual void output(int step) = 0;
+    virtual void output(int64_t step) = 0;
 
     /**
      * @brief Close the current output file and reopen a new one with the specified filename.
@@ -35,7 +36,7 @@ public:
 
 protected:
     int m_this_bead;           // Index of the current imaginary time slice
-    int m_out_freq;            // Frequency at which the dump occurs
+    int64_t m_out_freq;            // Frequency at which the dump occurs
     std::string m_out_unit;    // Units of the dump quantities
     std::ofstream m_out_file;  // Output file stream
 

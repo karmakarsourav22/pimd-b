@@ -1,7 +1,7 @@
 #include "dumps/dump.h"
 
-Dump::Dump(int this_bead, int out_freq, const std::string& out_unit) : m_this_bead(this_bead), m_out_freq(out_freq),
-                                                                       m_out_unit(out_unit)
+Dump::Dump(int this_bead, int64_t out_freq, const std::string& out_unit) : m_this_bead(this_bead), m_out_freq(out_freq),
+                                                                           m_out_unit(out_unit)
 {
 }
 
@@ -9,12 +9,14 @@ Dump::~Dump()
 {
 #ifdef USE_HDF5
 #ifdef SINGLE_RPMD_FILE
-    if (m_h5_run_ds != H5I_INVALID_HID) {
+    if (m_h5_run_ds != H5I_INVALID_HID)
+    {
         H5Dclose(m_h5_run_ds);
         m_h5_run_ds = H5I_INVALID_HID;
     }
 #endif
-    if (m_h5file_id != H5I_INVALID_HID) {
+    if (m_h5file_id != H5I_INVALID_HID)
+    {
         H5Fclose(m_h5file_id);
         m_h5file_id = H5I_INVALID_HID;
     }
@@ -25,11 +27,16 @@ Dump::~Dump()
 #endif
 }
 
-void Dump::reopenFile(const std::filesystem::path& folder) {
+void Dump::reopenFile(const std::filesystem::path& folder)
+{
 #ifdef SINGLE_RPMD_FILE
     // Single-file mode: open once; subsequent calls just advance the run counter.
 #ifdef USE_HDF5
-    if (m_h5file_id != H5I_INVALID_HID) { ++m_run_idx; return; }
+    if (m_h5file_id != H5I_INVALID_HID)
+    {
+        ++m_run_idx;
+        return;
+    }
 
     const std::filesystem::path target = folder.parent_path();
     std::filesystem::create_directories(target);
@@ -37,11 +44,13 @@ void Dump::reopenFile(const std::filesystem::path& folder) {
 
     m_h5file_id = H5Fcreate(full_path.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-    if (m_h5file_id < 0) {
+    if (m_h5file_id < 0)
+    {
         throw std::ios_base::failure("Failed to create HDF5 file: " + full_path.string());
     }
 
-    if (m_is_multi_run) {
+    if (m_is_multi_run)
+    {
         m_h5_run_ds = H5Utils::make_1d(m_h5file_id, "run", H5T_NATIVE_INT64);
     }
     h5CreateDatasets();
@@ -104,10 +113,12 @@ void Dump::reopenFile(const std::filesystem::path& folder) {
 }
 
 #ifdef USE_HDF5
-std::string Dump::h5FileName() const {
+std::string Dump::h5FileName() const
+{
     std::string name = fileName();
     const auto dot = name.rfind('.');
     return (dot != std::string::npos ? name.substr(0, dot) : name) + ".h5";
 }
+
 // e.g. "position_0.xyz" -> "position_0.h5", "force_0.dat" -> "force_0.h5"
 #endif

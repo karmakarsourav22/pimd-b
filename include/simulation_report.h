@@ -12,7 +12,7 @@ struct SimulationConfig;
  */
 class SimulationReport {
 public:
-    explicit SimulationReport(const SimulationConfig& config, long steps);
+    explicit SimulationReport(const SimulationConfig& config, int64_t steps);
 
     void writeReport(double wall_time);
 
@@ -22,7 +22,7 @@ private:
     std::vector<std::string> m_feature_lines;
 
     // Data needed for runtime calculations
-    long m_steps;
+    int64_t m_steps;
     bool m_should_skip_report;
 
     void initializeParameterLines(const SimulationConfig& config);

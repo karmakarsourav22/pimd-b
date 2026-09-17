@@ -19,7 +19,7 @@ namespace
 }
 
 ObservableInitializer::ObservableInitializer(
-    const long stride,
+    const int64_t stride,
     const StringMap& obs_list,
     const std::shared_ptr<SystemState>& state,
     const std::shared_ptr<ForceManager>& force_mgr,

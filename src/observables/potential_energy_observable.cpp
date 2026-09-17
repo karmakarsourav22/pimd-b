@@ -7,7 +7,7 @@ PotentialEnergyObservable::PotentialEnergyObservable(
     const std::shared_ptr<const ForceManager>& force_mgr,
     const BoxContext& box_ctx,
     const BeadContext& bead_ctx,
-    int out_freq,
+    int64_t out_freq,
     const std::string& out_unit
 ) : Observable("potential", out_freq, out_unit),
 m_coord(coord),

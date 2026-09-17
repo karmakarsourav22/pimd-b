@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -15,7 +16,7 @@ public:
      */
     explicit Observable(
         const std::string& name, 
-        int out_freq, 
+        int64_t out_freq, 
         const std::string& out_unit,
         const std::string& out_filename = ""
     );
@@ -83,7 +84,7 @@ public:
 
 protected:
     std::string m_name;          // Observable name
-    int m_out_freq;              // Frequency at which the observable is recorded
+    int64_t m_out_freq;              // Frequency at which the observable is recorded
     std::string m_out_unit;      // Units of the output quantities
     std::string m_out_filename;  // Custom output file (optional, empty = use central logger)
     ObservableCache* m_cache;    // Non-owning pointer to the observable cache

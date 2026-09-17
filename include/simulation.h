@@ -7,6 +7,7 @@
 #include <functional>
 #include <optional>
 #include <filesystem>
+#include <cstdint>
 
 class RpmdFrameSelector;
 enum class FrameSelectionMode;
@@ -38,9 +39,9 @@ public:
      */
     void run();
 private:
-    long m_steps;
-    long m_threshold;
-    long m_sfreq;
+    int64_t m_steps;
+    int64_t m_threshold;
+    int64_t m_sfreq;
     bool m_is_thermalization_phase;
 
     // Flag indicating whether the simulation is running in RPMD mode
@@ -64,7 +65,7 @@ private:
      *
      * @param step The step to set.
      */
-    void setStep(long step);
+    void setStep(int64_t step);
 
     static double getWallTime() noexcept;
 
@@ -88,7 +89,7 @@ private:
      * Dump the desired quantities (e.g., coordinates, forces, etc.) at the specified frequency.
      * @param step The current simulation step.
      */
-    void dumpStepInfo(long step) const;
+    void dumpStepInfo(int64_t step) const;
 
     void performMolecularDynamicsStep() const;
 
@@ -101,7 +102,7 @@ private:
 
     //void calculateObservables() const;
 
-    void calculateAndLogObservables(long step) const;
+    void calculateAndLogObservables(int64_t step) const;
 
     /**
      * Calculates the elapsed simulation time and prints a report.
@@ -110,20 +111,20 @@ private:
      */
     void finalizeSimulation(double start_time) const;
 
-    void executeStep(long step) const;
+    void executeStep(int64_t step) const;
 
     // ============ Initialization Factories ============
     /**
      * @brief Type alias for position initialization factories.
      * The factory takes an optional (xyz) frame index and performs the initialization.
      */
-    using PositionInitFactory = std::function<void(std::optional<long>)>;
+    using PositionInitFactory = std::function<void(std::optional<int64_t>)>;
 
     /**
      * @brief Type alias for momentum initialization factories.
      * The factory takes an optional (xyz) frame index and performs the initialization.
      */
-    using MomentumInitFactory = std::function<void(std::optional<long>)>;
+    using MomentumInitFactory = std::function<void(std::optional<int64_t>)>;
 
     /**
      * @brief Stores the factory for position initialization.

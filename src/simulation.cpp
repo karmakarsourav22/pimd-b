@@ -256,7 +256,7 @@ void Simulation::bindPositionInitFactory(
     const FrameSelectionMode frame_mode = config->rpmd_config.enabled ? FrameSelectionMode::Index : config->init_pos_frame_mode;
 
     m_position_init_factory = [this, init_type, filename, first_idx, unit, frame_mode, config]
-        (const std::optional<long> override_frame)
+        (const std::optional<int64_t> override_frame)
     {
         if (!m_state || !m_rng) {
             throw std::runtime_error("State or RNG is not initialized before position initialization.");
@@ -276,7 +276,7 @@ void Simulation::bindPositionInitFactory(
                 m_box_ctx
             );
         } else if (init_type == "xyz") {
-            long effective_frame;
+            int64_t effective_frame;
             if (override_frame.has_value()) {
                 effective_frame = override_frame.value();
             } else {
@@ -300,7 +300,7 @@ void Simulation::bindPositionInitFactory(
             );
 #ifdef USE_HDF5
         } else if (init_type == "hdf5") {
-            long effective_frame;
+            int64_t effective_frame;
             if (override_frame.has_value()) {
                 effective_frame = override_frame.value();
             } else {
@@ -346,7 +346,7 @@ void Simulation::bindMomentumInitFactory(
     const double thermo_beta = config->thermo_beta;
 
     m_momentum_init_factory = [this, init_type, filename, first_idx, unit, frame_mode, mass, thermo_beta, config]
-        (const std::optional<long> override_frame)
+        (const std::optional<int64_t> override_frame)
     {
         if (!m_state || !m_rng) {
             throw std::runtime_error("State or RNG is not initialized before momentum initialization.");
@@ -362,7 +362,7 @@ void Simulation::bindMomentumInitFactory(
                 thermo_beta
             );
         } else if (init_type == "xyz") {
-            long effective_frame;
+            int64_t effective_frame;
             if (override_frame.has_value()) {
                 effective_frame = override_frame.value();
             } else {
@@ -386,7 +386,7 @@ void Simulation::bindMomentumInitFactory(
             );
 #ifdef USE_HDF5
         } else if (init_type == "hdf5") {
-            long effective_frame;
+            int64_t effective_frame;
             if (override_frame.has_value()) {
                 effective_frame = override_frame.value();
             } else {
@@ -538,7 +538,7 @@ void Simulation::initializeForces(
     force_mgr->updateForces(*state, spring_ctx, box_ctx);
 }
 
-void Simulation::setStep(long step)
+void Simulation::setStep(const int64_t step)
 {
     m_is_thermalization_phase = (step < m_threshold);
 }
@@ -577,7 +577,7 @@ void Simulation::resetObservables() const {
     }
 }
 
-void Simulation::dumpStepInfo(long step) const
+void Simulation::dumpStepInfo(const int64_t step) const
 {
     for (const auto& dump : m_dumps) {
         dump->output(step);
@@ -608,7 +608,7 @@ void Simulation::calculateObservables() const {
 }
 */
 
-void Simulation::calculateAndLogObservables(long step) const {
+void Simulation::calculateAndLogObservables(const int64_t step) const {
     if (m_obs_logger->isLoggingStep(step)) {
         //calculateObservables();
         m_obs_logger->log(step);
@@ -632,7 +632,7 @@ void Simulation::finalizeSimulation(double start_time) const {
     m_report->writeReport(wall_time);
 }
 
-void Simulation::executeStep(const long step) const
+void Simulation::executeStep(const int64_t step) const
 {
     // Observables are only calculated and logged after the thermalization phase is complete.
     // Logging occurs before the molecular dynamics step to ensure that the observables
@@ -665,7 +665,7 @@ void Simulation::runPathIntegralMolecularDynamics() {
     initializeDumps(Output::FOLDER_NAME);
 
     // Main loop performing molecular dynamics steps
-    for (long step = 0; step <= m_steps; ++step) {
+    for (int64_t step = 0; step <= m_steps; ++step) {
         setStep(step);
         executeStep(step);
     }
@@ -707,10 +707,10 @@ void Simulation::runRingPolymerMolecularDynamics() {
     const double start_time = getWallTime();
 
     // Prepare the exact XYZ frame indices based on the number of runs and the fraction of NVT points that need to be discarded
-    const std::vector<long>& rpmd_frames = m_rpmd_frame_selector->getRpmdFrameIndices();
+    const std::vector<int64_t>& rpmd_frames = m_rpmd_frame_selector->getRpmdFrameIndices();
 
-    const long total_num_frames = m_rpmd_frame_selector->getNumFrames();
-    long last_frame_idx = total_num_frames - 1;
+    const int64_t total_num_frames = m_rpmd_frame_selector->getNumFrames();
+    int64_t last_frame_idx = total_num_frames - 1;
 
     printStatus(
         std::format(
@@ -737,7 +737,7 @@ void Simulation::runRingPolymerMolecularDynamics() {
         printStatus(std::format("Starting NVE run {}/{} (frame index {}/{})", run + 1, m_rpmd_context.num_runs, rpmd_frames[run], last_frame_idx), m_bead_ctx.this_bead);
 
         // Extract the frame index for the current RPMD run from the pre-computed list
-        const long frame = rpmd_frames[run];
+        const int64_t frame = rpmd_frames[run];
 
         // Re-initialize positions and momenta for the current RPMD run
         m_position_init_factory(frame);
@@ -755,7 +755,7 @@ void Simulation::runRingPolymerMolecularDynamics() {
         );
 
         // Main loop performing molecular dynamics steps for the current RPMD run
-        for (long step = 0; step <= m_steps; ++step) {
+        for (int64_t step = 0; step <= m_steps; ++step) {
             setStep(step);
             executeStep(step);
         }

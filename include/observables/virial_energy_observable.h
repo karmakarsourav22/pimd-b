@@ -11,7 +11,7 @@ public:
         const std::shared_ptr<const VecArray>& coord,
         const std::shared_ptr<const VecArray>& physical_forces,
         const BeadContext& bead_ctx,
-        int out_freq,
+        int64_t out_freq,
         const std::string& out_unit
     );
 

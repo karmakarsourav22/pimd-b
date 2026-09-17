@@ -5,7 +5,7 @@
 
 Observable::Observable(
     const std::string& name, 
-    int out_freq, 
+    int64_t out_freq, 
     const std::string& out_unit,
     const std::string& out_filename
 ) : m_name(name), m_out_freq(out_freq), m_out_unit(out_unit), m_out_filename(out_filename)

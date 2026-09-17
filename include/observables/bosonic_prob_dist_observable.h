@@ -18,7 +18,7 @@ class BosonicProbabilityStrategy;
  */
 class BosonicProbDistObservable final : public Observable {
 public:
-    BosonicProbDistObservable(int out_freq, const std::string& out_unit);
+    BosonicProbDistObservable(int64_t out_freq, const std::string& out_unit);
     ~BosonicProbDistObservable() override;
 
     void calculate() override;

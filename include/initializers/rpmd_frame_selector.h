@@ -33,18 +33,18 @@ public:
      *
      * @return Vector of frame indices, one per RPMD run
      */
-    [[nodiscard]] const std::vector<long>& getRpmdFrameIndices() const { return m_rpmd_frames; }
+    [[nodiscard]] const std::vector<int64_t>& getRpmdFrameIndices() const { return m_rpmd_frames; }
 
     /**
      * @brief Returns the total number of frames available in the XYZ file.
      *
      * @return Total frame count
      */
-    [[nodiscard]] long getNumFrames() const { return m_num_frames; }
+    [[nodiscard]] int64_t getNumFrames() const { return m_num_frames; }
 
 private:
-    std::vector<long> m_rpmd_frames;
-    long m_num_frames;
+    std::vector<int64_t> m_rpmd_frames;
+    int64_t m_num_frames;
 
     /**
      * @brief Queries an XYZ file to determine the number of frames it contains.
@@ -54,7 +54,7 @@ private:
      * @return Total number of frames in the file
      * @throws std::runtime_error if file cannot be opened or parsed
      */
-    static long countFramesInXyzFile(const std::string& filename, int first_idx);
+    static int64_t countFramesInXyzFile(const std::string& filename, int first_idx);
 
     /**
      * @brief Computes frame indices based on total frames, num_runs, and discard fraction.
@@ -64,8 +64,8 @@ private:
      * @param nvt_discard_frac Equilibration discard fraction
      * @return Vector of computed frame indices
      */
-    static std::vector<long> computeFrameIndices(
-        const long num_frames,
+    static std::vector<int64_t> computeFrameIndices(
+        const int64_t num_frames,
         const int num_runs,
         const double nvt_discard_frac,
         const int this_bead

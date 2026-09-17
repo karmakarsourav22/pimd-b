@@ -21,7 +21,7 @@ public:
      */
     NoseHooverEnergyObservable(
         const ThermostatContext& thermostat_ctx,
-        int                      out_freq,
+        int64_t                      out_freq,
         const std::string&       out_unit
     );
 

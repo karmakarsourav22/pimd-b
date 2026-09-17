@@ -4,6 +4,7 @@
 #include "core/simulation_config.h"  // VecArray, FrameSelectionMode
 
 #include <string>
+#include <cstdint>
 
 /**
  * @brief Utility for loading data from HDF5 trajectory files with unit conversion.
@@ -35,7 +36,7 @@ public:
         const std::string& dataset_name,
         const std::string& data_unit,
         const std::string& unit_family,
-        long init_frame,
+        int64_t init_frame,
         FrameSelectionMode init_frame_mode,
         VecArray& destination,
         double prefactor = 1.0
@@ -48,7 +49,7 @@ public:
      * @param dataset_name  Name of the dataset to query
      * @return Total frame count
      */
-    static long countFrames(
+    static int64_t countFrames(
         const std::string& h5_filename,
         const std::string& dataset_name
     );

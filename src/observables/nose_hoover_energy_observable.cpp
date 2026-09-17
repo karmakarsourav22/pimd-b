@@ -6,7 +6,7 @@
 
 NoseHooverEnergyObservable::NoseHooverEnergyObservable(
     const ThermostatContext& thermostat_ctx,
-    int                      out_freq,
+    int64_t                      out_freq,
     const std::string& out_unit
 ) : Observable("nh_energy", out_freq, out_unit),
 m_thermostat_ctx(thermostat_ctx) {

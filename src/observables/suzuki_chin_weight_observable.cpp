@@ -10,7 +10,7 @@ SuzukiChinWeightObservable::SuzukiChinWeightObservable(
     const ThermalContext& thermal_ctx,
     const SpringContext& spring_ctx,
     double alpha,
-    int out_freq,
+    int64_t out_freq,
     const std::string& out_unit
 ) : Observable("w_gsf", out_freq, out_unit),
     m_coord(coord), m_force_mgr(force_mgr),

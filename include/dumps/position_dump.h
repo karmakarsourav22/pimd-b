@@ -13,7 +13,7 @@ public:
     PositionDump(
         const std::shared_ptr<const VecArray>& coord, 
         int this_bead, 
-        int out_freq, 
+        int64_t out_freq,
         const std::string& out_unit
     );
 
@@ -27,7 +27,7 @@ public:
      *
      * @param step Current step of the simulation.
      */
-    void output(int step) override;
+    void output(int64_t step) override;
 
 protected:
     [[nodiscard]] std::string fileName() const override { return std::format("position_{}.xyz", m_this_bead); }

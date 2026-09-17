@@ -11,16 +11,16 @@ using Quantity = Units::Quantity;
 
 namespace {
     /**
-     * Returns the long value of a string that may use scientific notation (e.g. "1e6", "2.5e4").
+     * Returns the int64_t value of a string that may use scientific notation (e.g. "1e6", "2.5e4").
      * Throws std::invalid_argument / std::range_error on bad input.
      * Caps at 2^53 = the largest integer exactly representable as double =
      * which is astronomically large for any simulation parameter.
      *
      * @param s The string to parse.
      * @param param_name The name of the parameter (used in error messages).
-     * @return The parsed long value.
+     * @return The parsed int64_t value.
      */
-    long parseLongSci(const std::string& s, std::string_view param_name) {
+    int64_t parseLongSci(const std::string& s, std::string_view param_name) {
         std::size_t pos = 0;
         double d;
         try {
@@ -34,21 +34,24 @@ namespace {
             throw std::invalid_argument(
                 std::format("'{}': trailing characters in '{}'", param_name, s));
 
-        if (!std::isfinite(d) || d <= 0.0)
+        if (!std::isfinite(d) || d < 0.0)
             throw std::range_error(
-                std::format("'{}': must be a positive finite number (got {})", param_name, s));
+                std::format("'{}': must be a non-negative finite number (got {})", param_name, s));
 
         if (d != std::floor(d))
             throw std::invalid_argument(
                 std::format("'{}': must be a whole number (got {})", param_name, s));
 
-        // 2^53: largest integer exactly representable as double, and << LONG_MAX
+        // 2^53: largest integer exactly representable as double, well below INT64_MAX.
+        // Values above this cannot be represented exactly as a double, so we reject them
+        // to avoid silent precision loss in the double->int64_t conversion.
         constexpr double MAX_EXACT = 9007199254740992.0;
-        if (d > MAX_EXACT)
+        if (d > MAX_EXACT) {
             throw std::range_error(
-                std::format("'{}': value too large (got {})", param_name, s));
-
-        return static_cast<long>(d);
+                std::format("'{}': value {} exceeds the maximum allowed ({:.0f} = 2^53)",
+                    param_name, s, MAX_EXACT));
+        }
+        return static_cast<int64_t>(d);  // safe: d <= 2^53 < INT64_MAX
     }
 
     /**
@@ -77,7 +80,7 @@ namespace {
         int& index_offset,
         std::string& filename,
         std::string& unit,
-        long& frame,
+        int64_t& frame,
         FrameSelectionMode& frame_mode
     ) {
         /*if (specification.empty()) {
@@ -120,7 +123,10 @@ namespace {
         }
         unit = reader.Get(section, unit_key, "");
 
-        frame = reader.GetLong(section, key_prefix + "_frame", 0);
+        //frame = reader.GetLong(section, key_prefix + "_frame", 0);
+        const std::string frame_str = reader.Get(section, key_prefix + "_frame", "0");
+        frame = parseLongSci(frame_str, key_prefix + "_frame");
+
         if (frame < 0) {
             throw std::invalid_argument(key_prefix + "_frame must be non-negative");
         }
@@ -236,7 +242,13 @@ void Params::loadSimulationParams(SimulationConfig& config) const {
     if (config.steps < 1)
         throw std::invalid_argument(std::format("Invalid number of steps ({}<1)", config.steps));
 
-    config.threshold = static_cast<long>(threshold * config.steps);  // Threshold in terms of steps
+    // Guard against values that would overflow int64_t (parseLongSci already caps at 2^53 << INT64_MAX,
+    // but this makes the intent explicit for future readers):
+    static_assert(static_cast<double>(std::numeric_limits<int64_t>::max()) > 9007199254740992.0,
+        "int64_t too small to hold parseLongSci's maximum output");
+
+
+    config.threshold = static_cast<int64_t>(threshold * config.steps);  // Threshold in terms of steps
 
     if (!m_reader.HasValue(Sections::SIMULATION, "sfreq")) {
         throw std::invalid_argument(

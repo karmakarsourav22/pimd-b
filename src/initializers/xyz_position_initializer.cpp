@@ -5,7 +5,7 @@ XyzPositionInitializer::XyzPositionInitializer(
     const std::string& filename,
     int first_idx,
     const std::string& init_pos_unit,
-    long init_pos_frame,
+    int64_t init_pos_frame,
     FrameSelectionMode init_pos_frame_mode,
     const std::shared_ptr<VecArray>& coord,
     const BoxContext& box_ctx

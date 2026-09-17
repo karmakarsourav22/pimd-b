@@ -3,7 +3,7 @@
 #include "strategies/observables/bosonic_probability_strategy.h"
 
 BosonicSignObservable::BosonicSignObservable(
-    int out_freq, const std::string& out_unit
+    int64_t out_freq, const std::string& out_unit
 ) : Observable("sign", out_freq, out_unit),
 m_strategy(StatisticsManager::getInstance().createBosonicProbabilityStrategy()) {
     initializeLabel("sign");

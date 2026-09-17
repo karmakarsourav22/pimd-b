@@ -2,23 +2,26 @@
 #include "core/system_state.h"
 #include "output_paths.h"
 
-ForceDump::ForceDump(const std::shared_ptr<SystemState>& state, int this_bead, int out_freq, const std::string& out_unit) :
+ForceDump::ForceDump(const std::shared_ptr<SystemState>& state, int this_bead, int64_t out_freq,
+                     const std::string& out_unit) :
     Dump(this_bead, out_freq, out_unit), m_state(state)
 {
     Units::validateUnit("force", out_unit);
 }
 
 #ifdef USE_HDF5
-void ForceDump::h5CreateDatasets() {
+void ForceDump::h5CreateDatasets()
+{
     const int natoms = m_state->getNumAtoms();
     m_h5_step_ds = H5Utils::make_1d(m_h5file_id, "step", H5T_NATIVE_INT64);
     m_h5_frc_ds = H5Utils::make_frame_ds(m_h5file_id, "forces",
-        static_cast<hsize_t>(natoms),
-        static_cast<hsize_t>(NDIM));
+                                         static_cast<hsize_t>(natoms),
+                                         NDIM);
 }
 #endif
 
-void ForceDump::output(int step) {
+void ForceDump::output(int64_t step)
+{
     if (step % m_out_freq != 0)
         return;
 
@@ -30,7 +33,8 @@ void ForceDump::output(int step) {
     H5Utils::append_int64(m_h5_step_ds, frame, step);
 
 #ifdef SINGLE_RPMD_FILE
-    if (m_is_multi_run) {
+    if (m_is_multi_run)
+    {
         H5Utils::append_int64(m_h5_run_ds, frame, m_run_idx);
     }
 #endif
@@ -41,18 +45,18 @@ void ForceDump::output(int step) {
         for (int ax = 0; ax < NDIM; ++ax)
         {
             buf[ptcl_idx * NDIM + ax] = Units::convertToUser(
-                "force", 
+                "force",
                 m_out_unit,
                 m_state->getTotalForce(ptcl_idx, ax)
             );
         }
     }
     H5Utils::append_frame(
-        m_h5_frc_ds, 
+        m_h5_frc_ds,
         frame,
         buf.data(),
         static_cast<hsize_t>(natoms),
-        static_cast<hsize_t>(NDIM)
+        NDIM
     );
 #else
     m_out_file << std::format("{}\n", natoms);

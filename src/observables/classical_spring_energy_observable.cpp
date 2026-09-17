@@ -7,7 +7,7 @@ ClassicalSpringEnergyObservable::ClassicalSpringEnergyObservable(
     const std::shared_ptr<const VecArray>& prev_coord,
     const SpringContext& spring_ctx,
     const BoxContext& box_ctx,
-    int   out_freq,
+    int64_t   out_freq,
     const std::string& out_unit
 ) : Observable("cl_spring", out_freq, out_unit),
     m_spring_energy_strategy(StatisticsManager::getInstance().createClassicalSpringEnergyStrategy()),

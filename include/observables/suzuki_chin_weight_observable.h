@@ -21,7 +21,7 @@ public:
         const ThermalContext& thermal_ctx,
         const SpringContext& spring_ctx,
         double alpha,
-        int out_freq,
+        int64_t out_freq,
         const std::string& out_unit
     );
 

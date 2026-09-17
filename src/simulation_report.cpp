@@ -5,7 +5,7 @@
 
 #include <chrono>
 
-SimulationReport::SimulationReport(const SimulationConfig& config, long steps)
+SimulationReport::SimulationReport(const SimulationConfig& config, int64_t steps)
     : m_steps(steps), m_should_skip_report(config.this_bead != 0) {
     if (!m_should_skip_report) {
         initializeParameterLines(config);

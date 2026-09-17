@@ -23,7 +23,7 @@ class ObservableInitializer
 {
 public:
     ObservableInitializer(
-        long stride,
+        int64_t stride,
         const StringMap& obs_list,
         const std::shared_ptr<SystemState>& state,
         const std::shared_ptr<ForceManager>& force_mgr,
@@ -62,7 +62,7 @@ private:
     [[nodiscard]] std::shared_ptr<Observable> createSuzukiChinVirialEnergyObservable(const std::string& out_unit) const;
     [[nodiscard]] std::shared_ptr<Observable> createCenterOfMassObservable(const std::string& out_unit) const;
 
-    long m_stride;
+    int64_t m_stride;
     StringMap m_observables_list;
     std::shared_ptr<SystemState> m_state;
     std::shared_ptr<ForceManager> m_force_mgr;

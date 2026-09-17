@@ -12,7 +12,7 @@ void XyzDataLoader::loadFromFile(
     const std::string& xyz_filename,
     const std::string& data_unit,
     const std::string& unit_family,
-    long init_frame,
+    int64_t init_frame,
     FrameSelectionMode init_frame_mode,
     VecArray& destination,
     const double prefactor
@@ -26,7 +26,7 @@ void XyzDataLoader::loadFromFile(
 
     // XYZ has no frame index, so both selection modes scan complete frames from
     // the beginning of the file.
-    for (long frame_index = 0;; ++frame_index) {
+    for (int64_t frame_index = 0;; ++frame_index) {
         // In step mode, EOF after a complete frame means that the requested
         // step does not exist. EOF inside a frame is reported as malformed.
         if (init_frame_mode == FrameSelectionMode::Step && input_file.peek() == std::char_traits<char>::eof()) {
@@ -69,7 +69,7 @@ void XyzDataLoader::loadFromFile(
 
 void XyzDataLoader::throwMalformedFrame(
     const std::string& xyz_filename,
-    long frame_index,
+    int64_t frame_index,
     const std::string& detail
 ) {
     throw std::runtime_error(std::format(
@@ -84,7 +84,7 @@ void XyzDataLoader::throwMalformedFrame(
 XyzDataLoader::FrameHeader XyzDataLoader::readFrameHeader(
     std::istream& input,
     const std::string& xyz_filename,
-    long frame_index
+    int64_t frame_index
 ) {
     std::string atom_count_line;
     if (!std::getline(input, atom_count_line)) {
@@ -121,7 +121,7 @@ XyzDataLoader::FrameHeader XyzDataLoader::readFrameHeader(
 void XyzDataLoader::skipFrameBody(
     std::istream& input,
     const std::string& xyz_filename,
-    long frame_index,
+    int64_t frame_index,
     int atom_count
 ) {
     std::string line;
@@ -144,7 +144,7 @@ void XyzDataLoader::readFrameBody(
     const std::string& xyz_filename,
     const std::string& data_unit,
     const std::string& unit_family,
-    long frame_index,
+    int64_t frame_index,
     int atom_count,
     VecArray& destination,
     double prefactor
@@ -197,9 +197,9 @@ void XyzDataLoader::readFrameBody(
     }
 }
 
-long XyzDataLoader::parseStepNumber(
+int64_t XyzDataLoader::parseStepNumber(
     const std::string& xyz_filename,
-    long frame_index,
+    int64_t frame_index,
     const std::string& comment
 ) {
     static const std::regex step_pattern(R"(^\s*Step\s+([0-9]+)\s*$)");
@@ -217,7 +217,7 @@ long XyzDataLoader::parseStepNumber(
     }
 
     try {
-        return std::stol(match[1].str());
+        return std::stoll(match[1].str()); // stoll -> long long, guaranteed at least 64 bits everywhere
     } catch (const std::exception&) {
         throwMalformedFrame(
             xyz_filename,
@@ -229,7 +229,7 @@ long XyzDataLoader::parseStepNumber(
 
 Vec XyzDataLoader::parseDataLine(
     const std::string& xyz_filename,
-    long frame_index,
+    int64_t frame_index,
     int atom_index,
     const std::string& line
 ) {

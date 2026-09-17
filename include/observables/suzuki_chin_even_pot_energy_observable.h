@@ -14,7 +14,7 @@ public:
         const std::shared_ptr<const ForceManager>& force_mgr,
         const BeadContext& bead_ctx,
         const BoxContext& box_ctx,
-        int out_freq,
+        int64_t out_freq,
         const std::string& out_unit
     );
 

@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <cstdint>
 
 #ifdef USE_HDF5
 #include "hdf5_utils.h"
@@ -25,7 +26,7 @@ public:
      */
     ObservablesLogger(
         int this_bead,
-        long frequency,
+        int64_t frequency,
         const std::vector<std::shared_ptr<Observable>>& observables
     );
 
@@ -46,14 +47,14 @@ public:
      * @param step The current simulation step.
      * @return True if the step is a logging step, false otherwise.
      */
-    [[nodiscard]] bool isLoggingStep(const long step) const { return step % m_frequency == 0; }
+    [[nodiscard]] bool isLoggingStep(const int64_t step) const { return step % m_frequency == 0; }
 
     /**
      * @brief Log the current values of all observables to the output file(s).
      *
      * @param step The current simulation step. This is used to write the step number in the output file.
      */
-    void log(long step);
+    void log(int64_t step);
 
     /**
      * @brief Close the current output file and reopen a new one with the specified filename.
@@ -87,7 +88,7 @@ private:
 #endif
 
     int m_this_bead;
-    long m_frequency;
+    int64_t m_frequency;
     std::vector<std::shared_ptr<Observable>> m_observables;
 
     // Text-mode state
@@ -109,7 +110,7 @@ private:
     std::vector<double> m_global_values;
     int m_total_quantities = 0;
 
-    void writeTimeStep(long step);
+    void writeTimeStep(int64_t step);
     void writeObservables();
     void openFileAndWriteHeader(const std::filesystem::path& filename);
 };

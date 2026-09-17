@@ -3,7 +3,7 @@
 #include "strategies/observables/bosonic_probability_strategy.h"
 
 BosonicProbDistObservable::BosonicProbDistObservable(
-    int out_freq, const std::string& out_unit
+    int64_t out_freq, const std::string& out_unit
 ) : Observable("prob_dist", out_freq, out_unit),
 m_strategy(StatisticsManager::getInstance().createBosonicProbabilityStrategy()) {
     initializeLabel("prob_dist");

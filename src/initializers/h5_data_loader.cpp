@@ -6,6 +6,7 @@
 #include <format>
 #include <hdf5.h>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 // RAII guard so HDF5 handles are always closed on exception.
@@ -42,9 +43,9 @@ namespace {
     };
 
     // Resolve a step number to an ordinal frame index by scanning the "step" dataset.
-    long resolveStep(hid_t file_id, long step_target, const std::string& h5_filename) {
-        H5Dataset step_ds(file_id, "step");
-        H5Space step_space(step_ds.id);
+    int64_t resolveStep(hid_t file_id, int64_t step_target, const std::string& h5_filename) {
+        const H5Dataset step_ds(file_id, "step");
+        const H5Space step_space(step_ds.id);
 
         hsize_t n_steps = 0;
         H5Sget_simple_extent_dims(step_space.id, &n_steps, nullptr);
@@ -55,7 +56,7 @@ namespace {
 
         for (hsize_t i = 0; i < n_steps; ++i) {
             if (steps[i] == static_cast<int64_t>(step_target))
-                return static_cast<long>(i);
+                return static_cast<int64_t>(i);
         }
         throw std::runtime_error(std::format(
             "H5DataLoader: file '{}' has no frame with step {}",
@@ -68,23 +69,23 @@ void H5DataLoader::loadFromFile(
     const std::string& dataset_name,
     const std::string& data_unit,
     const std::string& unit_family,
-    long init_frame,
-    FrameSelectionMode init_frame_mode,
+    const int64_t init_frame,
+    const FrameSelectionMode init_frame_mode,
     VecArray& destination,
-    double prefactor
+    const double prefactor
 ) {
-    H5File file(h5_filename);
+    const H5File file(h5_filename);
 
     // Resolve Step mode by scanning the companion "step" dataset.
-    long frame_idx = (init_frame_mode == FrameSelectionMode::Step)
+    int64_t frame_idx = (init_frame_mode == FrameSelectionMode::Step)
         ? resolveStep(file.id, init_frame, h5_filename)
         : init_frame;
 
-    H5Dataset ds(file.id, dataset_name);
-    H5Space fspace(ds.id);
+    const H5Dataset ds(file.id, dataset_name);
+    const H5Space fspace(ds.id);
 
     // Expect a 3D dataset [n_frames, n_atoms, n_coords].
-    int ndims = H5Sget_simple_extent_ndims(fspace.id);
+    const int ndims = H5Sget_simple_extent_ndims(fspace.id);
     if (ndims != 3) {
         throw std::runtime_error(std::format(
             "H5DataLoader: dataset '{}' in '{}' has {} dimensions; expected 3",
@@ -95,7 +96,7 @@ void H5DataLoader::loadFromFile(
     H5Sget_simple_extent_dims(fspace.id, dims, nullptr);
     // dims[0] = n_frames, dims[1] = n_atoms, dims[2] = n_coords (always 3 in XYZ convention)
 
-    if (frame_idx < 0 || static_cast<hsize_t>(frame_idx) >= dims[0]) {
+    if (frame_idx < 0 || std::cmp_greater_equal(frame_idx, dims[0])) {
         throw std::runtime_error(std::format(
             "H5DataLoader: frame index {} is out of range [0, {}) in '{}'",
             frame_idx, dims[0], h5_filename));
@@ -109,7 +110,7 @@ void H5DataLoader::loadFromFile(
     }
 
     const int n_atoms = destination.len();
-    if (static_cast<hsize_t>(n_atoms) != dims[1]) {
+    if (std::cmp_not_equal(n_atoms, dims[1])) {
         throw std::runtime_error(std::format(
             "H5DataLoader: file '{}' frame {} has {} atoms; simulation expects {}",
             h5_filename, frame_idx, dims[1], n_atoms));
@@ -138,15 +139,15 @@ void H5DataLoader::loadFromFile(
     }
 }
 
-long H5DataLoader::countFrames(
+int64_t H5DataLoader::countFrames(
     const std::string& h5_filename,
     const std::string& dataset_name
 ) {
-    H5File file(h5_filename);
-    H5Dataset ds(file.id, dataset_name);
-    H5Space space(ds.id);
+    const H5File file(h5_filename);
+    const H5Dataset ds(file.id, dataset_name);
+    const H5Space space(ds.id);
 
-    int ndims = H5Sget_simple_extent_ndims(space.id);
+    const int ndims = H5Sget_simple_extent_ndims(space.id);
     if (ndims < 1) {
         throw std::runtime_error(std::format(
             "H5DataLoader: dataset '{}' in '{}' has no dimensions",
@@ -155,7 +156,7 @@ long H5DataLoader::countFrames(
 
     std::vector<hsize_t> dims(ndims);
     H5Sget_simple_extent_dims(space.id, dims.data(), nullptr);
-    return static_cast<long>(dims[0]);
+    return static_cast<int64_t>(dims[0]);
 }
 
 #endif // USE_HDF5

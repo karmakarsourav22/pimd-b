@@ -1,17 +1,19 @@
 #include "dumps/velocity_dump.h"
 #include "output_paths.h"
 
-VelocityDump::VelocityDump(const VelocityContext& dump_context, int this_bead, int out_freq, const std::string& out_unit) :
+VelocityDump::VelocityDump(const VelocityContext& dump_context, int this_bead, int64_t out_freq,
+                           const std::string& out_unit) :
     Dump(this_bead, out_freq, out_unit), m_context(dump_context), m_natoms(dump_context.momenta->len())
 {
     Units::validateUnit("velocity", out_unit);
 }
 
 #ifdef USE_HDF5
-void VelocityDump::h5CreateDatasets() {
+void VelocityDump::h5CreateDatasets()
+{
     m_h5_step_ds = H5Utils::make_1d(m_h5file_id, "step", H5T_NATIVE_INT64);
     m_h5_vel_ds = H5Utils::make_frame_ds(
-        m_h5file_id, 
+        m_h5file_id,
         "velocities",
         static_cast<hsize_t>(m_natoms),
         3
@@ -19,7 +21,7 @@ void VelocityDump::h5CreateDatasets() {
 }
 #endif
 
-void VelocityDump::output(int step)
+void VelocityDump::output(int64_t step)
 {
     if (step % m_out_freq != 0)
         return;
@@ -30,14 +32,17 @@ void VelocityDump::output(int step)
     H5Utils::append_int64(m_h5_step_ds, frame, step);
 
 #ifdef SINGLE_RPMD_FILE
-    if (m_is_multi_run) {
+    if (m_is_multi_run)
+    {
         H5Utils::append_int64(m_h5_run_ds, frame, m_run_idx);
     }
 #endif
 
-    std::vector<double> buf(m_natoms * 3, 0.0);  // always 3 columns, zero-padded
-    for (int ptcl_idx = 0; ptcl_idx < m_natoms; ++ptcl_idx) {
-        for (int axis = 0; axis < NDIM; ++axis) {
+    std::vector<double> buf(3 * m_natoms, 0.0); // always 3 columns, zero-padded
+    for (int ptcl_idx = 0; ptcl_idx < m_natoms; ++ptcl_idx)
+    {
+        for (int axis = 0; axis < NDIM; ++axis)
+        {
             buf[ptcl_idx * 3 + axis] = Units::convertToUser(
                 "velocity",
                 m_out_unit,

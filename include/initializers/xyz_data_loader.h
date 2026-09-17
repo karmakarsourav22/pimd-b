@@ -39,16 +39,16 @@ public:
         const std::string& xyz_filename,
         const std::string& data_unit,
         const std::string& unit_family,
-        long init_frame,
+        int64_t init_frame,
         FrameSelectionMode init_frame_mode,
         VecArray& destination,
-        const double prefactor = 1.0
+        double prefactor = 1.0
     );
 
 private:
     [[noreturn]] static void throwMalformedFrame(
         const std::string& xyz_filename,
-        long frame_index,
+        int64_t frame_index,
         const std::string& detail
     );
 
@@ -58,7 +58,7 @@ private:
     static FrameHeader readFrameHeader(
         std::istream& input,
         const std::string& xyz_filename,
-        long frame_index
+        int64_t frame_index
     );
 
     /**
@@ -70,7 +70,7 @@ private:
     static void skipFrameBody(
         std::istream& input,
         const std::string& xyz_filename,
-        long frame_index,
+        int64_t frame_index,
         int atom_count
     );
 
@@ -82,7 +82,7 @@ private:
         const std::string& xyz_filename,
         const std::string& data_unit,
         const std::string& unit_family,
-        long frame_index,
+        int64_t frame_index,
         int atom_count,
         VecArray& destination,
         double prefactor
@@ -91,9 +91,9 @@ private:
     /**
      * Extracts a numeric value from a strict "Step <non-negative integer>" comment.
      */
-    static long parseStepNumber(
+    static int64_t parseStepNumber(
         const std::string& xyz_filename,
-        long frame_index,
+        int64_t frame_index,
         const std::string& comment
     );
 
@@ -105,7 +105,7 @@ private:
      */
     static Vec parseDataLine(
         const std::string& xyz_filename,
-        long frame_index,
+        int64_t frame_index,
         int atom_index,
         const std::string& line
     );

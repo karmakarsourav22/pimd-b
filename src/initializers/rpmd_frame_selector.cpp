@@ -69,7 +69,7 @@ RpmdFrameSelector::RpmdFrameSelector(const std::shared_ptr<SimulationConfig>& co
     );
 }
 
-long RpmdFrameSelector::countFramesInXyzFile(const std::string& filename, int first_idx) {
+int64_t RpmdFrameSelector::countFramesInXyzFile(const std::string& filename, int first_idx) {
     // Format the filename if it contains a placeholder for the bead index
     const std::string actual_filename = std::vformat(filename, std::make_format_args(first_idx));
 
@@ -80,7 +80,7 @@ long RpmdFrameSelector::countFramesInXyzFile(const std::string& filename, int fi
         );
     }
 
-    long frame_count = 0;
+    int64_t frame_count = 0;
     std::string line;
 
     // XYZ format: first line of each frame contains the number of atoms
@@ -123,18 +123,18 @@ long RpmdFrameSelector::countFramesInXyzFile(const std::string& filename, int fi
     return frame_count;
 }
 
-std::vector<long> RpmdFrameSelector::computeFrameIndices(
-    const long num_frames,
+std::vector<int64_t> RpmdFrameSelector::computeFrameIndices(
+    const int64_t num_frames,
     const int num_runs,
     const double nvt_discard_frac,
     const int this_bead
 )
 {
-    const long equilibration_frame = static_cast<long>(
-        std::floor(nvt_discard_frac * num_frames)
-        );
+    const int64_t equilibration_frame = static_cast<int64_t>(
+        std::floor(nvt_discard_frac * static_cast<double>(num_frames))
+    );
 
-    const long available_frames = num_frames - equilibration_frame;
+    const int64_t available_frames = num_frames - equilibration_frame;
 
     // Validate that we have enough frames for the requested runs
     if (available_frames < num_runs) {
@@ -158,17 +158,17 @@ std::vector<long> RpmdFrameSelector::computeFrameIndices(
         );
     }
 
-    std::vector<long> rpmd_frames;
+    std::vector<int64_t> rpmd_frames;
 
     if (num_runs == 1) {
         rpmd_frames.push_back(equilibration_frame);
     } else {
-        const long last_frame = num_frames - 1;
+        const int64_t last_frame = num_frames - 1;
 
         for (int run = 0; run < num_runs; ++run) {
             const double fraction = static_cast<double>(run) / (num_runs - 1);
-            const long frame = equilibration_frame + static_cast<long>(
-                std::floor(fraction * (last_frame - equilibration_frame))
+            const int64_t frame = equilibration_frame + static_cast<int64_t>(
+                std::floor(fraction * static_cast<double>(last_frame - equilibration_frame))
                 );
 
             rpmd_frames.push_back(frame);
