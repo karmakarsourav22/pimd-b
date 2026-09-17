@@ -162,7 +162,7 @@ void ObservablesLogger::writeTimeStep(int64_t step)
             H5Utils::append_int64(h5_f.run_ds, h5_f.row_count, m_run_idx);
         }
 #endif
-        H5Utils::append_int64(h5_f.step_ds, h5_f.row_count, static_cast<int>(step));
+        H5Utils::append_int64(h5_f.step_ds, h5_f.row_count, step);
     }
 #else
     for (auto& output_file : m_output_files) {

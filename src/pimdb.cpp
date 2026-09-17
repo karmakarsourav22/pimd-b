@@ -69,7 +69,7 @@ namespace {
         int rank,
         const std::string& error_type
     ) {
-        printError(ex.what(), rank, error_type);
+        printError(ex.what(), rank, error_type, rank);
         
         // Flush output buffers to ensure the error message is displayed before abortion
         flushStreams();

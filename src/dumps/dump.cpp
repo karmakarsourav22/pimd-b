@@ -38,7 +38,7 @@ void Dump::reopenFile(const std::filesystem::path& folder)
         return;
     }
 
-    const std::filesystem::path target = folder.parent_path();
+    const std::filesystem::path target = m_is_multi_run ? folder.parent_path() : folder;
     std::filesystem::create_directories(target);
     const std::filesystem::path full_path = target / h5FileName();
 
@@ -60,7 +60,7 @@ void Dump::reopenFile(const std::filesystem::path& folder)
         ++m_run_idx; return;
     }
 
-    const std::filesystem::path target = folder.parent_path();
+    const std::filesystem::path target = m_is_multi_run ? folder.parent_path() : folder;
     std::filesystem::create_directories(target);
     const std::filesystem::path full_path = target / fileName();
 

@@ -662,7 +662,9 @@ void Simulation::runPathIntegralMolecularDynamics() {
         Output::getPimdFilename()
     );
 
-    initializeDumps(Output::FOLDER_NAME);
+    MpiUtils::runCollectively("Dump initialization", [this] {
+        initializeDumps(Output::FOLDER_NAME);
+    });
 
     // Main loop performing molecular dynamics steps
     for (int64_t step = 0; step <= m_steps; ++step) {
@@ -750,9 +752,9 @@ void Simulation::runRingPolymerMolecularDynamics() {
             Output::getRpmdFilename(run)
         );
 
-        initializeDumps(
-            Output::getRpmdFolder(run)
-        );
+        MpiUtils::runCollectively("Dump initialization", [this, run] {
+            initializeDumps(Output::getRpmdFolder(run));
+        });
 
         // Main loop performing molecular dynamics steps for the current RPMD run
         for (int64_t step = 0; step <= m_steps; ++step) {
