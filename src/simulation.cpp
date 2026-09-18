@@ -716,7 +716,7 @@ void Simulation::runRingPolymerMolecularDynamics() {
 
     printStatus(
         std::format(
-            "Found {} frames in the provided XYZ files",
+            "Found {} frames in the provided trajectory files",
             total_num_frames
         ),
         m_bead_ctx.this_bead
@@ -736,7 +736,18 @@ void Simulation::runRingPolymerMolecularDynamics() {
     }
 
     for (int run = 0; run < m_rpmd_context.num_runs; ++run) {
-        printStatus(std::format("Starting NVE run {}/{} (frame index {}/{})", run + 1, m_rpmd_context.num_runs, rpmd_frames[run], last_frame_idx), m_bead_ctx.this_bead);
+        const double progress_percent = (run + 1) * 100.0 / m_rpmd_context.num_runs;
+        printStatus(
+            std::format(
+                "Starting NVE run {}/{} (frame index {}/{}) [{:.1f}%]", 
+                run + 1, 
+                m_rpmd_context.num_runs,
+                rpmd_frames[run], 
+                last_frame_idx, 
+                progress_percent
+            ), 
+            m_bead_ctx.this_bead
+        );
 
         // Extract the frame index for the current RPMD run from the pre-computed list
         const int64_t frame = rpmd_frames[run];
