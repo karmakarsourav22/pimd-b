@@ -160,7 +160,7 @@ Params::Params(const std::string& filename, const int& rank) : reader(filename) 
     if (double size = std::get<double>(sys["size"]); size <= 0.0)
         throw std::invalid_argument(std::format("The provided system size ({0:4.3f}) is unphysical!", size));
 
-    allowed_int_potential_names = { "aziz", "free", "harmonic", "dipole", "gaussiandeltarepulsion" };
+    allowed_int_potential_names = { "aziz", "free", "harmonic", "dipole", "gaussiandeltarepulsion", "quartic", "anharmonicanisotropic" };
     allowed_ext_potential_names = { "free", "harmonic", "double_well", "cosine" };
 
     /****** Interaction potential ******/
@@ -218,6 +218,16 @@ Params::Params(const std::string& filename, const int& rank) : reader(filename) 
         external_pot["amplitude"] = getQuantity(
             "energy", reader.Get(Sections::EXT_POTENTIAL, "amplitude", "1.0 millielectronvolt"));
         external_pot["phase"] = reader.GetReal(Sections::EXT_POTENTIAL, "phase", 1.0);
+    } else if (external_name == "quartic") {
+        external_pot["k"] = getQuantity(
+            "energy", reader.Get(Sections::EXT_POTENTIAL, "k", "1.0 millielectronvolt"));
+        external_pot["c"] = getQuantity(
+            "length", reader.Get(Sections::EXT_POTENTIAL, "c", "1.0 angstrom"));
+    } else if (external_name == "anharmonicanisotropic") {
+        external_pot["omega"] = getQuantity(
+            "energy", reader.Get(Sections::EXT_POTENTIAL, "omega", "1.0 millielectronvolt"));
+        external_pot["c3"] = reader.GetReal(Sections::EXT_POTENTIAL, "c3", 1.0);
+        external_pot["c4"] = reader.GetReal(Sections::EXT_POTENTIAL, "c4", 1.0);
     }
 
     /****** Output ******/

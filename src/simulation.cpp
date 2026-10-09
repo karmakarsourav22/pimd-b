@@ -828,6 +828,19 @@ std::unique_ptr<Potential> Simulation::initializePotential(const std::string& po
         return std::make_unique<AzizPotential>();
     }
 
+    if (potential_name == "quartic") {
+        double k = std::get<double>(potential_options.at("k"));
+        double c = std::get<double>(potential_options.at("c"));
+        return std::make_unique<QuarticPotential>(mass, k, c);
+    }
+
+    if (potential_name == "anharmonicanisotropic") {
+        double omega = std::get<double>(potential_options.at("omega"));
+        double c3 = std::get<double>(potential_options.at("c3"));
+        double c4 = std::get<double>(potential_options.at("c4"));
+        return std::make_unique<AnharmonicAnisotropic>(mass, omega, c3, c4);
+    }
+
     if (potential_name == "gaussiandeltarepulsion") {
         double g = std::get<double>(potential_options.at("g"));
         double sigma = std::get<double>(potential_options.at("sigma"));

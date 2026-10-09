@@ -171,3 +171,50 @@ private:
     double strength;   // strength = (g / sqrt(2 * pi * sigma * sigma))
 };
 
+/* -------------- Isotropic double well potential -------------- */
+class QuarticPotential : public Potential {
+public:
+    QuarticPotential(double mass, double k, double c);
+    ~QuarticPotential() override = default;
+
+    // Potential
+    double V(const dVec& x) override;
+
+    // Potential gradient
+    dVec gradV(const dVec& x) override;
+
+    // Potential laplacian
+    double laplacianV(const dVec& x) override;
+
+private:
+    double mass;      // Mass of the particle experiencing the quartic potential
+    double k;         // k has the dimension of energy ... V(r) = 0.25 k (r/c)^4
+    double c;         // It has the dimension of length.
+
+    double c4;        // c4 = c * c * c * c
+};
+
+/* -------------- Anharmonic potential -------------- */
+class AnharmonicAnisotropic : public Potential {
+public:
+    AnharmonicAnisotropic(double mass, double omega, double c3, double c4);
+    ~AnharmonicAnisotropic() override = default;
+
+    // Potential
+    double V(const dVec& x) override;
+
+    // Potential gradient
+    dVec gradV(const dVec& x) override;
+
+    // Potential laplacian
+    double laplacianV(const dVec& x) override;
+
+private:
+    double mass;         // V(r) = 0.5 * mass * (omega)^2 *
+    double omega;        //      sum_xi={x,y,z} ( xi**2 + c3 * xi**3 + c4 * xi**4 )
+    double c3;           //
+    double c4;
+
+    double k;            // = mass * omega * omega
+};
+

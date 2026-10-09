@@ -403,3 +403,98 @@ double AzizPotential::laplacianV(const dVec& x) {
 
     return laplacian;
 }
+
+// Anharmonic potential
+/**
+ * V(x) = (x^2 / 2) + (x^3 / 10) + (x^4 / 100)    : Used in Original RPMD paper
+ *      = 0.5 * x^2 * [ 1 + (0.2 * x) + (0.02 * x^2) ]
+ */
+
+AnharmonicAnisotropic::AnharmonicAnisotropic(double mass, double omega, double c3, double c4)
+    : mass(mass), omega(omega), c3(c3), c4(c4) {
+    k = mass * omega * omega;
+    }
+
+double AnharmonicAnisotropic::V(const dVec& x) {
+    double potential = 0.0;
+
+    for (int ptcl_idx = 0; ptcl_idx < x.len(); ++ptcl_idx) {
+        double fact = 0.5 * k;
+        for (int axis = 0; axis < NDIM; ++axis) {
+            double x2 = x(ptcl_idx, axis) * x(ptcl_idx, axis);
+            double x3 = x2 * x(ptcl_idx, axis);
+            double x4 = x2 * x2;
+            potential += fact * (x2 + (c3 * x3) + (c4 * x4));
+        }
+    }
+
+    return potential;
+}
+
+dVec AnharmonicAnisotropic::gradV(const dVec& x) {
+    dVec tempr(x);
+
+    for (int ptcl_idx = 0; ptcl_idx < x.len(); ++ptcl_idx) {
+        double fact = 0.5 * k;
+        for (int axis = 0; axis < NDIM; ++axis) {
+            double x2 = x(ptcl_idx, axis) * x(ptcl_idx, axis);
+            double fact1 = 2. + (3. * c3 * x(ptcl_idx, axis)) + (4. * c4 * x2);
+            tempr(ptcl_idx, axis) = fact * fact1 * tempr(ptcl_idx, axis);
+        }
+    }
+
+    return tempr;
+}
+
+double AnharmonicAnisotropic::laplacianV(const dVec& x) {
+    // @todo Complete the Laplacian?
+    return 0.0;
+}
+
+//Quartic potential
+
+QuarticPotential::QuarticPotential(double mass, double k, double c)
+    : mass(mass), k(k), c(c) {
+    c4 = c * c * c * c;
+    }
+
+double QuarticPotential::V(const dVec& x) {
+    double potential = 0.0;
+
+    for (int ptcl_idx = 0; ptcl_idx < x.len(); ++ptcl_idx) {
+        double r4 = 0.0;
+        for (int axis = 0; axis < NDIM; ++axis) {
+            r4 += x(ptcl_idx, axis) * x(ptcl_idx, axis) * x(ptcl_idx, axis) * x(ptcl_idx, axis);
+        }
+        potential += (r4 / c4);
+    }
+
+    potential *= 0.25 * k;
+
+    return potential;
+}
+
+dVec QuarticPotential::gradV(const dVec& x) {
+    dVec tempr(x);
+
+    for (int ptcl_idx = 0; ptcl_idx < x.len(); ++ptcl_idx) {
+        double r2 = 0;
+        for (int axis = 0; axis < NDIM; ++axis) {
+            r2 += x(ptcl_idx, axis) * x(ptcl_idx, axis);
+        }
+
+        double prefactor = k * (r2 / c4);
+
+        for (int axis = 0; axis < NDIM; ++axis) {
+            tempr(ptcl_idx, axis) = prefactor * tempr(ptcl_idx, axis);
+        }
+    }
+
+    return tempr;
+}
+
+double QuarticPotential::laplacianV(const dVec& x) {
+    // @todo Complete the Laplacian?
+    return 0.0;
+}
+
