@@ -160,7 +160,7 @@ Params::Params(const std::string& filename, const int& rank) : reader(filename) 
     if (double size = std::get<double>(sys["size"]); size <= 0.0)
         throw std::invalid_argument(std::format("The provided system size ({0:4.3f}) is unphysical!", size));
 
-    allowed_int_potential_names = { "aziz", "free", "harmonic", "dipole" };
+    allowed_int_potential_names = { "aziz", "free", "harmonic", "dipole", "gaussiandeltarepulsion" };
     allowed_ext_potential_names = { "free", "harmonic", "double_well", "cosine" };
 
     /****** Interaction potential ******/
@@ -189,6 +189,10 @@ Params::Params(const std::string& filename, const int& rank) : reader(filename) 
             "length", reader.Get(Sections::INT_POTENTIAL, "location", "1.0 angstrom"));
     } else if (interaction_name == "dipole") {
         interaction_pot["strength"] = reader.GetReal(Sections::INT_POTENTIAL, "strength", 1.0);
+    } else if (interaction_name == "gaussiandeltarepulsion") {
+        interaction_pot["sigma"] = getQuantity(
+            "length", reader.Get(Sections::INT_POTENTIAL, "sigma", "1.0 angstrom"));
+        interaction_pot["g"] = reader.GetReal(Sections::INT_POTENTIAL, "g", 1.0);
     }
 
     /****** External potential ******/
@@ -227,6 +231,9 @@ Params::Params(const std::string& filename, const int& rank) : reader(filename) 
     observables["classical"] = reader.Get(Sections::OBSERVABLES, "classical", "off");
     observables["bosonic"] = reader.Get(Sections::OBSERVABLES, "bosonic", "off");
     observables["winding"] = reader.Get(Sections::OBSERVABLES, "winding", "off");
+    observables["rhok"] = reader.Get(Sections::OBSERVABLES, "rhok", "off");
+    observables["rhok_grid"] = reader.Get(Sections::OBSERVABLES, "rhok_grid", "off");
+    observables["rhok_SelnK"] = reader.Get(Sections::OBSERVABLES, "rhok_SelnK", "off");
 }
 
 bool Params::labelInArray(const std::string& label, const StringsList& arr) {

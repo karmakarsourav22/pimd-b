@@ -5,6 +5,7 @@
 #include <ranges>
 #include "mpi.h"
 #include "winding.h"
+#include <complex>
 
 /**
  * @brief Generic observable class constructor
@@ -54,6 +55,12 @@ std::unique_ptr<Observable> ObservableFactory::createQuantity(const std::string&
         return std::make_unique<BosonicObservable>(_sim, _freq, _out_unit);
     } else if (observable_type == "winding") {
         return std::make_unique<WindingObservable>(_sim, _freq, _out_unit);
+    } else if (observable_type == "rhok") {
+        return std::make_unique<DensityKObservable>(_sim, _freq, _out_unit);
+    } else if (observable_type == "rhok_grid") {
+        return std::make_unique<DensityKObservableGrid>(_sim, _freq, _out_unit);
+    } else if (observable_type == "rhok_SelnK") {
+        return std::make_unique<DensityKObservableSelnK>(_sim, _freq, _out_unit);
     } else {
         throw std::invalid_argument("Unknown observable type.");
     }
@@ -415,3 +422,144 @@ void WindingObservable::calculate() {
         ++key_axis;
     }
 }
+
+/**
+ * @brief Calculates rho(-k, t) => the Fourier transform of the density operator, rho(x) = \sum_i \delta(x - x_i)
+ */
+DensityKObservable::DensityKObservable(const Simulation& _sim, int _freq, const std::string& _out_unit) :
+    Observable(_sim, _freq, _out_unit) {
+    initialize({ "rhop125KF_re", "rhop125KF_im", "rhop25KF_re", "rhop25KF_im", "rhop5KF_re", "rhop5KF_im", "rhoKF_re", "rhoKF_im", "rho2KF_re", "rho2KF_im" });
+}
+
+void DensityKObservable::calculate() {
+    calculateDensityKF();
+}
+
+void DensityKObservable::calculateDensityKF() {
+    std::complex<double> rho_local_p125KF(0.0, 0.0);
+    std::complex<double> rho_local_p25KF(0.0, 0.0);
+    std::complex<double> rho_local_p5KF(0.0, 0.0);
+    std::complex<double> rho_local_KF(0.0, 0.0);
+    std::complex<double> rho_local_2KF(0.0, 0.0);
+
+    // Local contribution from the current bead only
+    for (int ptcl_idx = 0; ptcl_idx < sim.natoms; ++ptcl_idx) {
+        const double x = sim.coord(ptcl_idx, 0);  // 1D case
+
+	rho_local_p125KF += std::exp(std::complex<double>(0.0, 0.125 * sim.KF * x));
+        rho_local_p25KF  += std::exp(std::complex<double>(0.0, 0.25 * sim.KF * x));
+	rho_local_p5KF   += std::exp(std::complex<double>(0.0, 0.5 * sim.KF * x));
+	rho_local_KF     += std::exp(std::complex<double>(0.0, 1. * sim.KF * x));
+	rho_local_2KF    += std::exp(std::complex<double>(0.0, 2. * sim.KF * x));
+    }
+
+    quantities["rhop125KF_re"] = rho_local_p125KF.real() / sim.nbeads;
+    quantities["rhop125KF_im"] = rho_local_p125KF.imag() / sim.nbeads;
+    quantities["rhop25KF_re"]  = rho_local_p25KF.real() / sim.nbeads;
+    quantities["rhop25KF_im"]  = rho_local_p25KF.imag() / sim.nbeads;
+    quantities["rhop5KF_re"]   = rho_local_p5KF.real() / sim.nbeads;
+    quantities["rhop5KF_im"]   = rho_local_p5KF.imag() / sim.nbeads;
+    quantities["rhoKF_re"]     = rho_local_KF.real() / sim.nbeads;
+    quantities["rhoKF_im"]     = rho_local_KF.imag() / sim.nbeads;
+    quantities["rho2KF_re"]    = rho_local_2KF.real() / sim.nbeads;
+    quantities["rho2KF_im"]    = rho_local_2KF.imag() / sim.nbeads;
+}
+
+/**
+ * @brief Calculates rho(-k, t), the Fourier transform of the density operator
+ * rho(x) = \sum_i \delta(x - x_i)
+ */
+
+DensityKObservableGrid::DensityKObservableGrid(const Simulation& _sim, int _freq, const std::string& _out_unit) :
+    Observable(_sim, _freq, _out_unit)
+{
+    // Build multipliers here, where sim is accessible
+    kf_multipliers.reserve(sim.nK);
+    double step = 1.0 / static_cast<double>(sim.nK);
+    for (int i = 1; i <= sim.nK; ++i)
+        kf_multipliers.push_back(i * step);
+
+    std::vector<std::string> headers;
+    headers.reserve(2 * kf_multipliers.size());
+    for (std::size_t i = 0; i < kf_multipliers.size(); ++i) {
+        std::string key = "rho_nk" + std::to_string(i + 1);
+        headers.push_back(key + "_re");
+        headers.push_back(key + "_im");
+    }
+    initialize(headers);
+}
+
+void DensityKObservableGrid::calculate() {
+    calculateDensityKFGrid();
+}
+
+void DensityKObservableGrid::calculateDensityKFGrid() {
+    std::vector<std::complex<double>> rho_local(kf_multipliers.size(), {0.0, 0.0});
+
+    for (int ptcl_idx = 0; ptcl_idx < sim.natoms; ++ptcl_idx) {
+        const double x = sim.coord(ptcl_idx, 0);
+        for (std::size_t i = 0; i < kf_multipliers.size(); ++i) {
+            double k = kf_multipliers[i] * sim.KF;
+            rho_local[i] += std::exp(std::complex<double>(0.0, k * x)); // ρ(-k)
+        }
+    }
+
+    for (std::size_t i = 0; i < kf_multipliers.size(); ++i) {
+        std::string key = "rho_nk" + std::to_string(i + 1);
+        quantities[key + "_re"] = rho_local[i].real() / sim.nbeads; // normalize by N
+        quantities[key + "_im"] = rho_local[i].imag() / sim.nbeads;
+    }
+}
+
+/**
+ * @brief Calculates rho(-k, t), the Fourier transform of the density operator
+ * rho(x) = \sum_i \delta(x - x_i)
+ */
+
+DensityKObservableSelnK::DensityKObservableSelnK(const Simulation& _sim, int _freq, const std::string& _out_unit) :
+    Observable(_sim, _freq, _out_unit)
+{
+    double inv_nK = 1.0 / static_cast<double>(sim.nK);
+
+    // Generate 1, 2, 4, 8, …, nK  (nK is always a power of 2)
+    k_indices.reserve(32); // at most log2(nK) + 1 entries
+    for (int i = 1; i <= sim.nK; i <<= 1)
+        k_indices.push_back(i);
+
+    kf_multipliers.reserve(k_indices.size());
+    for (int idx : k_indices)
+        kf_multipliers.push_back(idx * inv_nK);
+
+    std::vector<std::string> headers;
+    headers.reserve(2 * k_indices.size());
+    for (int idx : k_indices) {
+        std::string key = "rho_nk" + std::to_string(idx);
+        headers.push_back(key + "_re");
+        headers.push_back(key + "_im");
+    }
+    initialize(headers);
+}
+
+void DensityKObservableSelnK::calculate() {
+    calculateDensityKFSelnK();
+}
+
+void DensityKObservableSelnK::calculateDensityKFSelnK() {
+    std::vector<std::complex<double>> rho_local(k_indices.size(), {0.0, 0.0});
+
+    for (int ptcl_idx = 0; ptcl_idx < sim.natoms; ++ptcl_idx) {
+        const double x = sim.coord(ptcl_idx, 0);
+        for (std::size_t i = 0; i < k_indices.size(); ++i) {
+            double k = kf_multipliers[i] * sim.KF;
+            rho_local[i] += std::exp(std::complex<double>(0.0, k * x));
+        }
+    }
+
+    for (std::size_t i = 0; i < k_indices.size(); ++i) {
+        std::string key = "rho_nk" + std::to_string(k_indices[i]);
+        quantities[key + "_re"] = rho_local[i].real() / sim.nbeads;
+        quantities[key + "_im"] = rho_local[i].imag() / sim.nbeads;
+    }
+}
+
+

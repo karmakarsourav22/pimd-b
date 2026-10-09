@@ -149,3 +149,25 @@ private:
         return (x < D ? r : 0.0);
     }
 };
+
+/* -------------- Repulsive gaussian approximation of delta potential -------------- */
+class GaussianDeltaRepulsion : public Potential {
+public:
+    GaussianDeltaRepulsion(double g, double sigma);
+    ~GaussianDeltaRepulsion() override = default;
+
+    // Potential
+    double V(const dVec& x) override;
+
+    // Potential gradient
+    dVec gradV(const dVec& x) override;
+
+    // Potential laplacian
+    double laplacianV(const dVec& x) override;
+
+private:
+    double g;   // V(r_ij) = (g / sqrt(2 * pi * sigma * sigma)) * exp(- 0.5 * (r_ij / sigma)^2)
+    double sigma;
+    double strength;   // strength = (g / sqrt(2 * pi * sigma * sigma))
+};
+

@@ -56,6 +56,9 @@
 // A small number (but not necessarily the smallest)
 constexpr auto EPS = 1.0E-7;
 
+// value of pi
+constexpr auto PI = 3.141592653589793238462643383279502884;
+
 // Progress bar parameters
 constexpr int PBWIDTH = 30;
 constexpr std::string_view PBSTR = "||||||||||||||||||||||||||||||";

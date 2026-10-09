@@ -54,6 +54,9 @@ Simulation::Simulation(const int& rank, const int& nproc, Params& param_obj, uns
 
     beta = 1.0 / (Constants::kB * temperature);
 
+    KF = 3.14159265358979323846 * natoms / size;
+    nK = natoms / 2;
+
     getVariant(param_obj.sys["mass"], mass);
 
 #if IPI_CONVENTION
@@ -825,6 +828,12 @@ std::unique_ptr<Potential> Simulation::initializePotential(const std::string& po
         return std::make_unique<AzizPotential>();
     }
 
+    if (potential_name == "gaussiandeltarepulsion") {
+        double g = std::get<double>(potential_options.at("g"));
+        double sigma = std::get<double>(potential_options.at("sigma"));
+        return std::make_unique<GaussianDeltaRepulsion>(g, sigma);
+    }
+
     return std::make_unique<Potential>();
 }
 
@@ -940,6 +949,9 @@ void Simulation::initializeObservables(const StringMap& sim_params) {
     addObservableIfEnabled(sim_params, "energy", "energy");
     addObservableIfEnabled(sim_params, "classical", "classical");
     addObservableIfEnabled(sim_params, "winding", "winding");
+    addObservableIfEnabled(sim_params, "rhok", "rhok");
+    addObservableIfEnabled(sim_params, "rhok_grid", "rhok_grid");
+    addObservableIfEnabled(sim_params, "rhok_SelnK", "rhok_SelnK");
 
     if (bosonic) {
         addObservableIfEnabled(sim_params, "bosonic", "bosonic");

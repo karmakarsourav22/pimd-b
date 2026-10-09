@@ -25,6 +25,9 @@ public:
     double gamma;       // Friction constant of the Langevin thermostat
     double threshold;   // Percentage of steps to throw away (thermalization)
 
+    double KF;          // Fermi wavenumber in the context of Lieb-Liniger model
+    int nK;             // n for which k_n = k_F in the context of Lieb-Liniger model
+
     int natoms;         // Number of atoms in the system
     int nbeads;         // Number of beads
 

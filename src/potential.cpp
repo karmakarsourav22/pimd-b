@@ -4,6 +4,95 @@
 
 Potential::Potential() : tailV(0.0) {}
 
+// Gaussian delta potential: V(r_ij) = (g / (sqrt(2*pi*sigma*sigma))**2 ) * exp(-0.5 * r_ij**2 / sigma**2)
+GaussianDeltaRepulsion::GaussianDeltaRepulsion(double g, double sigma) : g(g), sigma(sigma) {
+    // Repulsive Gaussian pair-potential approximation of the Delta potential.
+    strength = 1. / (sqrt(2. * PI * sigma * sigma));
+}
+
+double GaussianDeltaRepulsion::V(const dVec& x) {
+    double potential = 0.0;
+    double g_eff = 1.0;
+    for (int axis = 0; axis < NDIM; ++axis) {
+        g_eff *= strength ;
+    }
+    g_eff *= g ;
+
+    // Iterate through the N provided distance vectors
+    for (int ptcl_idx = 0; ptcl_idx < x.len(); ++ptcl_idx) {
+        // Calculate the scalar distance of a given pair of particles
+        /*
+        double norm_squared = 0.0;
+
+        for (int axis = 0; axis < NDIM; ++axis) {
+            norm_squared += x(ptcl_idx, axis) * x(ptcl_idx, axis);
+        }
+
+        const double r_scaled = sqrt(norm_squared) / rm;
+        */
+
+        // Distance
+        const double norm = x.norm(ptcl_idx);
+        const double r_scaled = norm / sigma;
+
+        if (norm > EPS) {
+           // Ignores the self-interactions
+           potential += g_eff * exp(- 0.5 * (r_scaled * r_scaled));
+        }
+    }
+
+    return potential;
+}
+
+dVec GaussianDeltaRepulsion::gradV(const dVec& x) {
+    dVec tempr(x);
+
+    double g_eff = 1.0;
+    for (int axis = 0; axis < NDIM; ++axis) {
+        g_eff *= strength ;
+    }
+    g_eff *= g ;
+
+    // Iterate through the N provided distance vectors
+    for (int pair_idx = 0; pair_idx < x.len(); ++pair_idx) {
+        // Calculate the scalar distance of a given pair of particles
+        /*
+        double norm_squared = 0.0;
+
+        for (int axis = 0; axis < NDIM; ++axis) {
+            norm_squared += x(pair_idx, axis) * x(pair_idx, axis);
+        }
+
+        const double norm = sqrt(norm_squared);
+        */
+        const double norm = x.norm(pair_idx);
+        const double r_scaled = norm / sigma;
+        const double T1 = g_eff * exp(- 0.5 * (r_scaled * r_scaled));
+
+        double grad_result;
+
+        // Do not allow self-interactions
+        if (norm > EPS)
+           grad_result = T1 * (- r_scaled / sigma);
+
+        // The gradient multiplies the distance vector.
+        // We need only the direction, so we normalize the distance vector.
+        grad_result /= norm;
+
+        for (int axis = 0; axis < NDIM; ++axis) {
+            tempr(pair_idx, axis) = grad_result * tempr(pair_idx, axis);
+        }
+    }
+
+    return tempr;
+}
+
+double GaussianDeltaRepulsion::laplacianV(const dVec& x) {
+    // @todo Complete the Laplacian?
+    return 0.0;
+}
+
+
 // Isotropic harmonic potential
 HarmonicPotential::HarmonicPotential(double mass, double omega) : mass(mass), omega(omega) {
     k = mass * omega * omega;

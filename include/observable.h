@@ -99,3 +99,41 @@ public:
 
     void calculate() override;
 };
+
+/* -------------------------------- */
+
+class DensityKObservable : public Observable {
+public:
+    DensityKObservable(const Simulation& _sim, int _freq, const std::string& _out_unit);
+
+    void calculate() override;
+
+private:
+    void calculateDensityKF();
+};
+
+/* -------------------------------- */
+
+class DensityKObservableGrid : public Observable {
+public:
+    DensityKObservableGrid(const Simulation& _sim, int _freq, const std::string& _out_unit);
+
+    void calculate() override;
+
+private:
+    void calculateDensityKFGrid();
+    std::vector<double> kf_multipliers;
+};
+
+/* -------------------------------- */
+
+class DensityKObservableSelnK : public Observable {
+public:
+    DensityKObservableSelnK(const Simulation& _sim, int _freq, const std::string& _out_unit);
+    void calculate() override;
+
+private:
+    void calculateDensityKFSelnK();
+    std::vector<int>    k_indices;      // 1, 2, 4, …, nK
+    std::vector<double> kf_multipliers; // k_indices[i] / nK
+};
