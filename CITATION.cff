@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it and the original PIMD-B++ code."
+title: "PIMD-B++ with density Fourier-component observable"
+authors:
+  - family-names: Karmakar
+    given-names: Sourav
+repository-code: "https://github.com/karmakarsourav22/pimd-b"
+license: MIT
+version: 1.0.0
+date-released: 2026-10-09
+references:
+  - type: software
+    title: "PIMD-B++: Path Integral Molecular Dynamics for Bosons"
+    authors:
+      - family-names: Higer
+        given-names: Jacob
+    repository-code: "https://github.com/higj/pimd-b"
+    license: MIT
+    year: 2024

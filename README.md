@@ -1,3 +1,42 @@
+> **Note:** This repository is a modified version of
+> [PIMD-B++](https://github.com/higj/pimd-b) by Jacob Higer, released under
+> the MIT License. All credit for the original implementation goes to the
+> original author and contributors. This version is based on the `pbc` branch
+> of the original repository (commit `2375caa`).
+> Modifications by Sourav Karmakar.
+
+## Modifications in this version
+
+### Fourier components of the density, rho(-k, t)
+
+New observable `DensityKObservableSelnK` computes
+
+    rho(-k, t) = sum_i exp(i k x_i(t))
+
+at selected wavevectors k = (n/nK) * kF, for n = 1, 2, 4, ..., nK, where
+nK = N/2 (N = number of particles) must be a power of 2. Real and imaginary
+parts are written for each k. Currently implemented for 1D only.
+
+Definitions:
+
+    kF = pi * N / L          Fermi wavevector
+    kn = (2 * pi / L) * n    wavevector, n integer
+    Momentum transfer = hbar * kn
+    kn / kF = 2n / N = n / nK,  so nK = N / 2
+
+Example for N = 128 (nK = 64):
+
+| kn / kF | n  |
+|---------|----|
+| 0.125   | 8  |
+| 0.25    | 16 |
+| 0.5     | 32 |
+| 1.0     | 64 |
+
+---
+
+*Original README below.*
+
 # PIMD-B++	
 ![Ubuntu compilation check](https://github.com/higj/pimd-b/actions/workflows/cmake-ubuntu.yml/badge.svg)
 
